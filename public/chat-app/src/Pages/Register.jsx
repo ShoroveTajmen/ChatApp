@@ -1,13 +1,70 @@
 import { Link } from "react-router-dom";
 import Logo from "../assets/logo.svg";
+import { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import { registerRoute } from "../utils/APIRoutes";
 
 const Register = () => {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    alert("form");
+  const [values, setValues] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 8000,
+    pauseOnHover: true,
+    theme: "dark",
   };
 
-  const handleChange = (event) => {};
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (handleValidation()) {
+        console.log("in validation", registerRoute)
+        const {password, confirmPassword, username, email} = values;
+        const {data} = await axios.post(registerRoute, {
+            username,
+            email,
+            password,
+        });
+    }
+    
+  };
+
+  const handleValidation = () => {
+    const { password, confirmPassword, username, email } = values;
+    if (password !== confirmPassword) {
+      toast.error(
+        "Password and confirm password should be same.",
+        toastOptions
+      );
+      return false;
+    } else if (username.length < 3) {
+      toast.error(
+        "Username should be greater than 3 characters.",
+        toastOptions
+      );
+      return false;
+    } else if (password.length < 8) {
+      toast.error(
+        "Password should be equal or greater than 8 characters.",
+        toastOptions
+      );
+      return false;
+    } else if (email === ""){
+        toast.error("email is required", toastOptions);
+    }
+    return true;
+  };
+
+  const handleChange = (event) => {
+    setValues({ ...values, [event.target.name]: event.target.value });
+    // console.log(values);
+  };
 
   return (
     <div>
@@ -48,12 +105,21 @@ const Register = () => {
             name="confirmPassword"
             onChange={(e) => handleChange(e)}
           />
-          <button className="bg-[#997af0] text-white p-[7px] border-none font-bold cursor-pointer rounded-lg text-[15px] uppercase hover:bg-indigo-700 transition-all duration-700 ease-in-out" type="submit">Create User</button>
+          <button
+            className="bg-[#997af0] text-white p-[7px] border-none font-bold cursor-pointer rounded-lg text-[15px] uppercase hover:bg-indigo-700 transition-all duration-700 ease-in-out"
+            type="submit"
+          >
+            Create User
+          </button>
           <span className="text-white uppercase ">
-            Already have an account ? <Link to="/login"><span className="text-[#4e0eff] font-bold underline">Login</span></Link>
+            Already have an account ?{" "}
+            <Link to="/login">
+              <span className="text-[#4e0eff] font-bold underline">Login</span>
+            </Link>
           </span>
         </form>
       </div>
+      <ToastContainer></ToastContainer>
     </div>
   );
 };
